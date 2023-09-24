@@ -1,56 +1,50 @@
-// Event Loop
-
-// const timeout = setTimeout( () => {
-//     console.log('after 2 seconds')
-// },2000)
-// clearTimeout(timeout)
-// setTimeout( () => {
-//     console.log('after 3 seconds')
-// },3000)
-// let count=0
-// setInterval(() => {
-//     console.log('tick', ++count)
-// }, 1000);
-// function delay(callback, time = 1000) {
-//     setTimeout(callback, time) 
+// const car = {
+//     model: 'Tesla',
+//     year: 2023,
 // }
-// delay( () => {
-//     console.log('timeout')
-// }, 2000)
-const delay = (time = 1000) => {
-    const promise = new Promise((resolve, reject) => {
-        setTimeout( () => {
-            resolve([1, 2, 3])
-            reject('Error in delay')
-        }, time)
-    })
-    return promise
-}
 
-// delay(2500).then( (data) => {
-//     console.log('Timeout', data)
-//     return data.map((x) => x**2)
-// }).then((data) => {
-//     console.log(data)
-// })
-// .catch( (err) => {
-//     console.log(err)
-// })
-// .finally( ()=>console.log('Finally'))
-const getData= () => new Promise(resolve => resolve([1,2,3]) )
-getData().then((array) => console.log(array))
+// const json = JSON.stringify(car)
+// const parsed=JSON.parse(json)
+// console.log(json,parsed)
 
-// Async Await
+const list = document.querySelector('#list')
+const filter = document.querySelector('#filter')
+let USERS=[]
 
-async function asyncExample() { 
-    const data = await getData()
-    console.log(data)
-    try {
-        await delay(3000)
-    } catch (err) {
-        console.log(err)
-    } finally {
-        console.log('Finnaly')
+filter.addEventListener('input', (event) => {
+    const value=event.target.value.toLowerCase()
+    const filteredUsers=USERS.filter((user) => 
+        user.name.toLowerCase().includes(value) 
+    ) 
+    render(filteredUsers)
+})
+async function start() {
+    list.innerHTML = 'Loading...'
+    try{
+        const resp = await fetch('https://jsonplaceholder.typicode.com/users')
+        const data=await resp.json()
+        setTimeout(() => {
+            USERS=data
+            render(data)
+        }, 2000);
+    } catch(err){
+        list.style.color = 'red'
+        list.innerHTML=err.message
     }
 }
-asyncExample()
+
+function render(users=[]) {
+    if (users.length===0) {
+      list.innerHTML='No results matching your search were found'  
+    } else {
+        const html=users.map(toHTML).join('')
+        list.innerHTML = html
+    }
+}
+
+function toHTML(user) {
+    return `
+        <li class ="list-group-item">${user.name}</li>
+    `
+}
+start()
